@@ -4,14 +4,14 @@ from __future__ import annotations
 
 import pytest
 
-from yesautomate_runtime.db import (
+from plsautomate_runtime.db import (
     create_execution,
     get_execution,
     get_session_factory,
     list_executions,
     update_execution,
 )
-from yesautomate_runtime.observability import get_execution_stats
+from plsautomate_runtime.observability import get_execution_stats
 
 
 @pytest.mark.asyncio

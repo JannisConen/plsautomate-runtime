@@ -14,7 +14,7 @@ import json as _json
 
 import httpx
 
-from yesautomate_runtime.actions.base import BaseAction
+from plsautomate_runtime.actions.base import BaseAction
 
 logger = logging.getLogger(__name__)
 

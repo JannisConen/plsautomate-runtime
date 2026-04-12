@@ -6,12 +6,12 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from yesautomate_runtime.config import AppConfig, ProcessConfig, TriggerConfig
-from yesautomate_runtime.db import close_db, get_execution, get_session_factory, init_db
-from yesautomate_runtime.executor import Executor
-from yesautomate_runtime.pipeline import Pipeline, _load_process_modules, _parse_duration
-from yesautomate_runtime.storage import LocalStorage
-from yesautomate_runtime.types import (
+from plsautomate_runtime.config import AppConfig, ProcessConfig, TriggerConfig
+from plsautomate_runtime.db import close_db, get_execution, get_session_factory, init_db
+from plsautomate_runtime.executor import Executor
+from plsautomate_runtime.pipeline import Pipeline, _load_process_modules, _parse_duration
+from plsautomate_runtime.storage import LocalStorage
+from plsautomate_runtime.types import (
     After,
     Before,
     Execution,
@@ -108,10 +108,10 @@ async def test_pipeline_execute_default_llm(db, pipeline_config, executor, stora
 
     with (
         patch(
-            "yesautomate_runtime.executor.litellm.acompletion",
+            "plsautomate_runtime.executor.litellm.acompletion",
             new_callable=AsyncMock,
         ) as mock_llm,
-        patch("yesautomate_runtime.executor.litellm.completion_cost", return_value=0.001),
+        patch("plsautomate_runtime.executor.litellm.completion_cost", return_value=0.001),
     ):
         mock_llm.return_value = _mock_llm_response('{"category": "test"}')
 
@@ -122,7 +122,7 @@ async def test_pipeline_execute_default_llm(db, pipeline_config, executor, stora
     # Verify execution was logged
     session_factory = get_session_factory()
     async with session_factory() as session:
-        from yesautomate_runtime.db import list_executions
+        from plsautomate_runtime.db import list_executions
 
         execs = await list_executions(session, process_name="upstream")
         assert len(execs) == 1
@@ -138,10 +138,10 @@ async def test_pipeline_review_flow(db, pipeline_config, executor, storage):
 
     with (
         patch(
-            "yesautomate_runtime.executor.litellm.acompletion",
+            "plsautomate_runtime.executor.litellm.acompletion",
             new_callable=AsyncMock,
         ) as mock_llm,
-        patch("yesautomate_runtime.executor.litellm.completion_cost", return_value=0.001),
+        patch("plsautomate_runtime.executor.litellm.completion_cost", return_value=0.001),
     ):
         mock_llm.return_value = _mock_llm_response('{"draft": "response"}')
 
@@ -154,7 +154,7 @@ async def test_pipeline_review_flow(db, pipeline_config, executor, storage):
     # Verify execution is pending_review
     session_factory = get_session_factory()
     async with session_factory() as session:
-        from yesautomate_runtime.db import list_executions
+        from plsautomate_runtime.db import list_executions
 
         execs = await list_executions(session, process_name="review-process")
         assert len(execs) == 1
@@ -170,10 +170,10 @@ async def test_pipeline_approve_review(db, pipeline_config, executor, storage):
 
     with (
         patch(
-            "yesautomate_runtime.executor.litellm.acompletion",
+            "plsautomate_runtime.executor.litellm.acompletion",
             new_callable=AsyncMock,
         ) as mock_llm,
-        patch("yesautomate_runtime.executor.litellm.completion_cost", return_value=0.001),
+        patch("plsautomate_runtime.executor.litellm.completion_cost", return_value=0.001),
     ):
         mock_llm.return_value = _mock_llm_response('{"draft": "response"}')
         await pipeline.execute_process("review-process", {"email": "test"}, trigger)
@@ -181,7 +181,7 @@ async def test_pipeline_approve_review(db, pipeline_config, executor, storage):
     # Get the execution ID
     session_factory = get_session_factory()
     async with session_factory() as session:
-        from yesautomate_runtime.db import list_executions
+        from plsautomate_runtime.db import list_executions
 
         execs = await list_executions(session, process_name="review-process")
         exec_id = execs[0].id
@@ -207,17 +207,17 @@ async def test_pipeline_approve_with_modified_output(db, pipeline_config, execut
 
     with (
         patch(
-            "yesautomate_runtime.executor.litellm.acompletion",
+            "plsautomate_runtime.executor.litellm.acompletion",
             new_callable=AsyncMock,
         ) as mock_llm,
-        patch("yesautomate_runtime.executor.litellm.completion_cost", return_value=0.001),
+        patch("plsautomate_runtime.executor.litellm.completion_cost", return_value=0.001),
     ):
         mock_llm.return_value = _mock_llm_response('{"draft": "original"}')
         await pipeline.execute_process("review-process", {"email": "test"}, trigger)
 
     session_factory = get_session_factory()
     async with session_factory() as session:
-        from yesautomate_runtime.db import list_executions
+        from plsautomate_runtime.db import list_executions
 
         execs = await list_executions(session, process_name="review-process")
         exec_id = execs[0].id
@@ -240,17 +240,17 @@ async def test_pipeline_reject_review(db, pipeline_config, executor, storage):
 
     with (
         patch(
-            "yesautomate_runtime.executor.litellm.acompletion",
+            "plsautomate_runtime.executor.litellm.acompletion",
             new_callable=AsyncMock,
         ) as mock_llm,
-        patch("yesautomate_runtime.executor.litellm.completion_cost", return_value=0.001),
+        patch("plsautomate_runtime.executor.litellm.completion_cost", return_value=0.001),
     ):
         mock_llm.return_value = _mock_llm_response('{"draft": "bad response"}')
         await pipeline.execute_process("review-process", {"email": "test"}, trigger)
 
     session_factory = get_session_factory()
     async with session_factory() as session:
-        from yesautomate_runtime.db import list_executions
+        from plsautomate_runtime.db import list_executions
 
         execs = await list_executions(session, process_name="review-process")
         exec_id = execs[0].id

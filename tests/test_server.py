@@ -8,9 +8,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from yesautomate_runtime.config import load_config
-from yesautomate_runtime.db import close_db, init_db
-from yesautomate_runtime.server import create_app
+from plsautomate_runtime.config import load_config
+from plsautomate_runtime.db import close_db, init_db
+from plsautomate_runtime.server import create_app
 
 
 @pytest.fixture
@@ -73,8 +73,8 @@ async def test_process_with_valid_key(client: AsyncClient) -> None:
     mock_resp = _mock_llm_response('{"result": "processed"}')
 
     with (
-        patch("yesautomate_runtime.executor.litellm.acompletion", new_callable=AsyncMock) as mock_llm,
-        patch("yesautomate_runtime.executor.litellm.completion_cost", return_value=0.001),
+        patch("plsautomate_runtime.executor.litellm.acompletion", new_callable=AsyncMock) as mock_llm,
+        patch("plsautomate_runtime.executor.litellm.completion_cost", return_value=0.001),
     ):
         mock_llm.return_value = mock_resp
 
@@ -116,8 +116,8 @@ async def test_executions_list(client: AsyncClient) -> None:
     mock_resp = _mock_llm_response()
 
     with (
-        patch("yesautomate_runtime.executor.litellm.acompletion", new_callable=AsyncMock) as mock_llm,
-        patch("yesautomate_runtime.executor.litellm.completion_cost", return_value=0.001),
+        patch("plsautomate_runtime.executor.litellm.acompletion", new_callable=AsyncMock) as mock_llm,
+        patch("plsautomate_runtime.executor.litellm.completion_cost", return_value=0.001),
     ):
         mock_llm.return_value = mock_resp
 
@@ -148,8 +148,8 @@ async def test_execution_detail(client: AsyncClient) -> None:
     mock_resp = _mock_llm_response('{"answer": "42"}')
 
     with (
-        patch("yesautomate_runtime.executor.litellm.acompletion", new_callable=AsyncMock) as mock_llm,
-        patch("yesautomate_runtime.executor.litellm.completion_cost", return_value=0.002),
+        patch("plsautomate_runtime.executor.litellm.acompletion", new_callable=AsyncMock) as mock_llm,
+        patch("plsautomate_runtime.executor.litellm.completion_cost", return_value=0.002),
     ):
         mock_llm.return_value = mock_resp
 
@@ -183,8 +183,8 @@ async def test_execution_stats(client: AsyncClient) -> None:
     mock_resp = _mock_llm_response()
 
     with (
-        patch("yesautomate_runtime.executor.litellm.acompletion", new_callable=AsyncMock) as mock_llm,
-        patch("yesautomate_runtime.executor.litellm.completion_cost", return_value=0.001),
+        patch("plsautomate_runtime.executor.litellm.acompletion", new_callable=AsyncMock) as mock_llm,
+        patch("plsautomate_runtime.executor.litellm.completion_cost", return_value=0.001),
     ):
         mock_llm.return_value = mock_resp
 
@@ -220,7 +220,7 @@ async def test_execution_not_found(client: AsyncClient) -> None:
 async def test_process_llm_error(client: AsyncClient) -> None:
     """LLM errors result in 500 and logged execution."""
     with patch(
-        "yesautomate_runtime.executor.litellm.acompletion",
+        "plsautomate_runtime.executor.litellm.acompletion",
         new_callable=AsyncMock,
         side_effect=Exception("LLM unavailable"),
     ):

@@ -10,7 +10,7 @@ from typing import Any
 
 import httpx
 
-from yesautomate_runtime.connectors.base import Connector, ConnectorItem
+from plsautomate_runtime.connectors.base import Connector, ConnectorItem
 
 
 class SlackConnector(Connector):

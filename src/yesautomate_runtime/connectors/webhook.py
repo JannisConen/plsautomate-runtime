@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from yesautomate_runtime.connectors.base import Connector, ConnectorItem
+from plsautomate_runtime.connectors.base import Connector, ConnectorItem
 
 
 class WebhookConnector(Connector):

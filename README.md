@@ -1,29 +1,29 @@
-# yesautomate-runtime
+# plsautomate-runtime
 
-Runtime engine for [PlsAutomate](https://github.com/JannisConen/yesautomate-runtime) generated applications. Provides a FastAPI server that executes LLM-powered processes with cost tracking, execution logging, secret management, and file handling.
+Runtime engine for [PlsAutomate](https://github.com/JannisConen/plsautomate-runtime) generated applications. Provides a FastAPI server that executes LLM-powered processes with cost tracking, execution logging, secret management, and file handling.
 
 > Completely vibe-coded in 1 hour.
 
 ## Installation
 
 ```bash
-pip install yesautomate-runtime
+pip install plsautomate-runtime
 ```
 
 With optional extras:
 
 ```bash
 # Langfuse observability
-pip install yesautomate-runtime[langfuse]
+pip install plsautomate-runtime[langfuse]
 
 # Azure Key Vault secrets
-pip install yesautomate-runtime[azure]
+pip install plsautomate-runtime[azure]
 
 # AWS Secrets Manager
-pip install yesautomate-runtime[aws]
+pip install plsautomate-runtime[aws]
 
 # Everything
-pip install yesautomate-runtime[all]
+pip install plsautomate-runtime[all]
 ```
 
 ## Quick start
@@ -60,7 +60,7 @@ export ANTHROPIC_API_KEY=sk-ant-...
 ### 3. Start the server
 
 ```bash
-yesautomate-runtime start --config plsautomate.config.yaml
+plsautomate-runtime start --config plsautomate.config.yaml
 ```
 
 The server starts on `http://localhost:8000` by default.
@@ -155,7 +155,7 @@ processes:
     after_module: processes.my_process.after        # Post-processing
 ```
 
-Each module should define an async function matching the phase signature. See the [PlsAutomate docs](https://github.com/JannisConen/yesautomate-runtime) for details.
+Each module should define an async function matching the phase signature. See the [PlsAutomate docs](https://github.com/JannisConen/plsautomate-runtime) for details.
 
 ## Secret providers
 
@@ -165,14 +165,14 @@ The runtime supports multiple secret backends:
 |----------|-------------|-------------|
 | Environment | `env` | Read from environment variables (default) |
 | PlsAutomate | `plsautomate` | Fetch from PlsAutomate server |
-| Azure Key Vault | `azure_keyvault` | Azure Key Vault (`pip install yesautomate-runtime[azure]`) |
-| AWS Secrets Manager | `aws_secrets_manager` | AWS Secrets Manager (`pip install yesautomate-runtime[aws]`) |
+| Azure Key Vault | `azure_keyvault` | Azure Key Vault (`pip install plsautomate-runtime[azure]`) |
+| AWS Secrets Manager | `aws_secrets_manager` | AWS Secrets Manager (`pip install plsautomate-runtime[aws]`) |
 | SAP Credential Store | `sap_credential_store` | SAP BTP Credential Store |
 
 ## CLI reference
 
 ```
-yesautomate-runtime start [OPTIONS]
+plsautomate-runtime start [OPTIONS]
 
 Options:
   --config PATH   Path to plsautomate.config.yaml (default: plsautomate.config.yaml)
@@ -184,8 +184,8 @@ Options:
 
 ```bash
 # Clone and install
-git clone https://github.com/JannisConen/yesautomate-runtime.git
-cd yesautomate-runtime
+git clone https://github.com/JannisConen/plsautomate-runtime.git
+cd plsautomate-runtime
 pip install -e ".[dev]"
 
 # Run tests

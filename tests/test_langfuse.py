@@ -8,8 +8,8 @@ from unittest.mock import AsyncMock, patch
 import litellm
 import pytest
 
-from yesautomate_runtime.config import LangfuseConfig, ObservabilityConfig
-from yesautomate_runtime.executor import Executor
+from plsautomate_runtime.config import LangfuseConfig, ObservabilityConfig
+from plsautomate_runtime.executor import Executor
 
 
 @pytest.fixture(autouse=True)

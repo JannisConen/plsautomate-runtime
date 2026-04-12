@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from yesautomate_runtime.executor import Executor
+from plsautomate_runtime.executor import Executor
 
 
 @pytest.fixture
@@ -32,8 +32,8 @@ async def test_execute_success(executor: Executor) -> None:
     mock_resp = _mock_response('{"category": "invoice", "priority": 7}')
 
     with (
-        patch("yesautomate_runtime.executor.litellm.acompletion", new_callable=AsyncMock) as mock_llm,
-        patch("yesautomate_runtime.executor.litellm.completion_cost", return_value=0.001),
+        patch("plsautomate_runtime.executor.litellm.acompletion", new_callable=AsyncMock) as mock_llm,
+        patch("plsautomate_runtime.executor.litellm.completion_cost", return_value=0.001),
     ):
         mock_llm.return_value = mock_resp
 
@@ -60,8 +60,8 @@ async def test_execute_model_override(executor: Executor) -> None:
     mock_resp = _mock_response()
 
     with (
-        patch("yesautomate_runtime.executor.litellm.acompletion", new_callable=AsyncMock) as mock_llm,
-        patch("yesautomate_runtime.executor.litellm.completion_cost", return_value=0.01),
+        patch("plsautomate_runtime.executor.litellm.acompletion", new_callable=AsyncMock) as mock_llm,
+        patch("plsautomate_runtime.executor.litellm.completion_cost", return_value=0.01),
     ):
         mock_llm.return_value = mock_resp
 
@@ -82,9 +82,9 @@ async def test_execute_cost_error_handled(executor: Executor) -> None:
     mock_resp = _mock_response()
 
     with (
-        patch("yesautomate_runtime.executor.litellm.acompletion", new_callable=AsyncMock) as mock_llm,
+        patch("plsautomate_runtime.executor.litellm.acompletion", new_callable=AsyncMock) as mock_llm,
         patch(
-            "yesautomate_runtime.executor.litellm.completion_cost",
+            "plsautomate_runtime.executor.litellm.completion_cost",
             side_effect=Exception("no pricing"),
         ),
     ):
@@ -106,8 +106,8 @@ async def test_execute_instructions_hash_deterministic(executor: Executor) -> No
     mock_resp = _mock_response()
 
     with (
-        patch("yesautomate_runtime.executor.litellm.acompletion", new_callable=AsyncMock) as mock_llm,
-        patch("yesautomate_runtime.executor.litellm.completion_cost", return_value=0),
+        patch("plsautomate_runtime.executor.litellm.acompletion", new_callable=AsyncMock) as mock_llm,
+        patch("plsautomate_runtime.executor.litellm.completion_cost", return_value=0),
     ):
         mock_llm.return_value = mock_resp
 
@@ -129,7 +129,7 @@ async def test_execute_instructions_hash_deterministic(executor: Executor) -> No
 async def test_execute_llm_error_propagates(executor: Executor) -> None:
     """LLM errors propagate to caller."""
     with patch(
-        "yesautomate_runtime.executor.litellm.acompletion",
+        "plsautomate_runtime.executor.litellm.acompletion",
         new_callable=AsyncMock,
         side_effect=Exception("API rate limited"),
     ):

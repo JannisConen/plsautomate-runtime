@@ -1,5 +1,5 @@
-"""Enable python -m yesautomate_runtime."""
+"""Enable python -m plsautomate_runtime."""
 
-from yesautomate_runtime import main
+from plsautomate_runtime import main
 
 main()

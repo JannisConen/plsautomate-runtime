@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from yesautomate_runtime.config import AppConfig, load_config
+from plsautomate_runtime.config import AppConfig, load_config
 
 
 def test_load_valid_config(config_yaml: Path) -> None:

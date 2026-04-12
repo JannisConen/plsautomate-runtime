@@ -12,10 +12,10 @@ from uuid import uuid4
 
 from fastapi import Depends, FastAPI, HTTPException, Request, UploadFile
 
-from yesautomate_runtime import __version__
-from yesautomate_runtime.auth import APIKeyAuth
-from yesautomate_runtime.config import AppConfig, ProcessConfig
-from yesautomate_runtime.db import (
+from plsautomate_runtime import __version__
+from plsautomate_runtime.auth import APIKeyAuth
+from plsautomate_runtime.config import AppConfig, ProcessConfig
+from plsautomate_runtime.db import (
     close_db,
     create_execution,
     get_execution,
@@ -26,12 +26,12 @@ from yesautomate_runtime.db import (
     trigger_ref_exists,
     update_execution,
 )
-from yesautomate_runtime.executor import Executor
-from yesautomate_runtime.files import process_uploaded_file, resolve_file_refs
-from yesautomate_runtime.observability import get_execution_stats
-from yesautomate_runtime.pipeline import Pipeline
-from yesautomate_runtime.scheduler import Scheduler
-from yesautomate_runtime.storage import StorageBackend, create_storage
+from plsautomate_runtime.executor import Executor
+from plsautomate_runtime.files import process_uploaded_file, resolve_file_refs
+from plsautomate_runtime.observability import get_execution_stats
+from plsautomate_runtime.pipeline import Pipeline
+from plsautomate_runtime.scheduler import Scheduler
+from plsautomate_runtime.storage import StorageBackend, create_storage
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ def create_app(config: AppConfig) -> FastAPI:
     # Initialize webhook logging backend if configured
     webhook_backend = None
     if config.logging_config.backend == "webhook" and config.logging_config.webhook_url:
-        from yesautomate_runtime.db import WebhookLoggingBackend
+        from plsautomate_runtime.db import WebhookLoggingBackend
 
         webhook_secret = os.environ.get("WEBHOOK_SECRET") if config.logging_config.webhook_auth else None
         webhook_backend = WebhookLoggingBackend(
@@ -125,7 +125,7 @@ def create_app(config: AppConfig) -> FastAPI:
         try:
             import gradio as gr
 
-            from yesautomate_runtime.ui import create_demo, get_gradio_auth
+            from plsautomate_runtime.ui import create_demo, get_gradio_auth
 
             demo = create_demo(config, pipeline=None)
             demo.api_open = False
@@ -147,7 +147,7 @@ def create_app(config: AppConfig) -> FastAPI:
         except ImportError:
             logger.info(
                 "Gradio not installed — demo UI disabled. "
-                "Install with: pip install yesautomate-runtime[ui]"
+                "Install with: pip install plsautomate-runtime[ui]"
             )
 
     # --- Health endpoint (no auth) ---
@@ -380,7 +380,7 @@ def create_app(config: AppConfig) -> FastAPI:
         offset: int = 0,
         _auth: str = Depends(auth_dep),
     ) -> dict[str, Any]:
-        from yesautomate_runtime.db import list_decisions
+        from plsautomate_runtime.db import list_decisions
 
         session_factory = get_session_factory()
         async with session_factory() as session:
@@ -486,7 +486,7 @@ def _make_process_handler(
         # Use pipeline if available
         pl = get_pipeline()
         if pl:
-            from yesautomate_runtime.types import TriggerContext
+            from plsautomate_runtime.types import TriggerContext
 
             # Use propagated trigger ref if present (e.g. original Gmail message ID
             # forwarded from an upstream process via process.call). Falls back to the
@@ -522,14 +522,14 @@ def _make_process_handler(
                         logger.warning("Webhook logging failed: %s", wh_err)
 
                 # Cleanup temporary storage
-                from yesautomate_runtime.storage import NoneStorage
+                from plsautomate_runtime.storage import NoneStorage
 
                 if isinstance(storage, NoneStorage):
                     storage.cleanup(execution_id)
 
                 return output or {}
             except Exception as exc:
-                from yesautomate_runtime.storage import NoneStorage
+                from plsautomate_runtime.storage import NoneStorage
 
                 if isinstance(storage, NoneStorage):
                     storage.cleanup(execution_id)
@@ -537,7 +537,7 @@ def _make_process_handler(
 
         # Fallback: direct LLM execution (Phase 1 mode)
         # Load prompts from prompts/ dir, fall back to legacy instructions.md, then config
-        from yesautomate_runtime.pipeline import _load_prompts, _load_output_schema
+        from plsautomate_runtime.pipeline import _load_prompts, _load_output_schema
 
         module_base = process_name.replace("-", "_")
         prompts = _load_prompts(module_base)
@@ -605,7 +605,7 @@ def _make_process_handler(
                     logger.warning("Webhook logging failed: %s", wh_err)
 
             # Cleanup temporary storage
-            from yesautomate_runtime.storage import NoneStorage
+            from plsautomate_runtime.storage import NoneStorage
 
             if isinstance(storage, NoneStorage):
                 storage.cleanup(execution_id)
@@ -625,7 +625,7 @@ def _make_process_handler(
                 )
 
             # Cleanup temporary storage on error too
-            from yesautomate_runtime.storage import NoneStorage
+            from plsautomate_runtime.storage import NoneStorage
 
             if isinstance(storage, NoneStorage):
                 storage.cleanup(execution_id)
@@ -736,9 +736,9 @@ def _init_connectors(
     config: AppConfig, secrets: dict[str, str], storage: StorageBackend
 ) -> dict[str, Any]:
     """Initialize connectors for processes that use them."""
-    from yesautomate_runtime.connectors.exchange import ExchangeConnector
-    from yesautomate_runtime.connectors.gmail import GmailConnector
-    from yesautomate_runtime.connectors.webhook import WebhookConnector
+    from plsautomate_runtime.connectors.exchange import ExchangeConnector
+    from plsautomate_runtime.connectors.gmail import GmailConnector
+    from plsautomate_runtime.connectors.webhook import WebhookConnector
 
     connector_map = {
         "exchange": ExchangeConnector,
@@ -783,8 +783,8 @@ def _register_scheduled_jobs(
                 _connector: Any = connector,
                 _tf: dict[str, Any] | None = _filter,
             ) -> None:
-                from yesautomate_runtime.condition import evaluate_condition
-                from yesautomate_runtime.types import TriggerContext
+                from plsautomate_runtime.condition import evaluate_condition
+                from plsautomate_runtime.types import TriggerContext
 
                 if _connector:
                     # Fetch items from connector
@@ -855,13 +855,13 @@ def _register_scheduled_jobs(
 def _create_app_from_env() -> FastAPI | None:
     """Factory for uvicorn: reads PLSAUTOMATE_CONFIG env var to create the app.
 
-    Usage: PLSAUTOMATE_CONFIG=path.yaml uvicorn yesautomate_runtime.server:app --reload
+    Usage: PLSAUTOMATE_CONFIG=path.yaml uvicorn plsautomate_runtime.server:app --reload
     """
     config_path = os.environ.get("PLSAUTOMATE_CONFIG")
     if not config_path:
         return None
 
-    from yesautomate_runtime.config import load_config
+    from plsautomate_runtime.config import load_config
 
     config = load_config(config_path)
     return create_app(config)

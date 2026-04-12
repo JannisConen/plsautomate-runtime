@@ -4,7 +4,7 @@ import os
 
 from fastapi import HTTPException, Request
 
-from yesautomate_runtime.config import AuthConfig
+from plsautomate_runtime.config import AuthConfig
 
 
 class APIKeyAuth:

@@ -8,18 +8,18 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from yesautomate_runtime.config import load_config
-from yesautomate_runtime.db import (
+from plsautomate_runtime.config import load_config
+from plsautomate_runtime.db import (
     close_db,
     create_execution,
     get_session_factory,
     init_db,
     update_execution,
 )
-from yesautomate_runtime.executor import Executor
-from yesautomate_runtime.pipeline import Pipeline
-from yesautomate_runtime.server import create_app
-from yesautomate_runtime.storage import LocalStorage
+from plsautomate_runtime.executor import Executor
+from plsautomate_runtime.pipeline import Pipeline
+from plsautomate_runtime.server import create_app
+from plsautomate_runtime.storage import LocalStorage
 
 
 @pytest.fixture
@@ -107,16 +107,16 @@ def _mock_llm_response(content: str = '{"result": "ok"}'):
 
 async def _create_pending_review(pipeline: Pipeline) -> str:
     """Create a pending review execution via the pipeline."""
-    from yesautomate_runtime.types import TriggerContext
+    from plsautomate_runtime.types import TriggerContext
 
     trigger = TriggerContext(type="webhook", ref="test-ref")
 
     with (
         patch(
-            "yesautomate_runtime.executor.litellm.acompletion",
+            "plsautomate_runtime.executor.litellm.acompletion",
             new_callable=AsyncMock,
         ) as mock_llm,
-        patch("yesautomate_runtime.executor.litellm.completion_cost", return_value=0.001),
+        patch("plsautomate_runtime.executor.litellm.completion_cost", return_value=0.001),
     ):
         mock_llm.return_value = _mock_llm_response('{"draft": "response"}')
         await pipeline.execute_process(
@@ -126,7 +126,7 @@ async def _create_pending_review(pipeline: Pipeline) -> str:
     # Find the pending review execution
     session_factory = get_session_factory()
     async with session_factory() as session:
-        from yesautomate_runtime.db import list_executions
+        from plsautomate_runtime.db import list_executions
 
         execs = await list_executions(session, status=["pending_review"])
         assert len(execs) >= 1

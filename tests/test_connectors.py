@@ -6,13 +6,13 @@ import os
 
 import pytest
 
-from yesautomate_runtime.connectors.base import Connector, ConnectorItem
-from yesautomate_runtime.connectors.webhook import WebhookConnector
-from yesautomate_runtime.connectors.slack import SlackConnector
-from yesautomate_runtime.config import _parse_duration
-from yesautomate_runtime.scheduler import Scheduler
-from yesautomate_runtime.secrets import EnvSecretProvider, SecretManager, SecretConfig
-from yesautomate_runtime.types import FileRef
+from plsautomate_runtime.connectors.base import Connector, ConnectorItem
+from plsautomate_runtime.connectors.webhook import WebhookConnector
+from plsautomate_runtime.connectors.slack import SlackConnector
+from plsautomate_runtime.config import _parse_duration
+from plsautomate_runtime.scheduler import Scheduler
+from plsautomate_runtime.secrets import EnvSecretProvider, SecretManager, SecretConfig
+from plsautomate_runtime.types import FileRef
 
 
 # --- ConnectorItem ---

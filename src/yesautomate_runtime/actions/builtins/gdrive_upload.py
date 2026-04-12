@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from yesautomate_runtime.actions.base import BaseAction
+from plsautomate_runtime.actions.base import BaseAction
 
 
 class GDriveUploadAction(BaseAction):

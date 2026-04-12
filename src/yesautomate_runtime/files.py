@@ -9,8 +9,8 @@ from typing import Any, Literal
 import httpx
 from fastapi import UploadFile
 
-from yesautomate_runtime.storage import LocalStorage
-from yesautomate_runtime.types import FileRef
+from plsautomate_runtime.storage import LocalStorage
+from plsautomate_runtime.types import FileRef
 
 logger = logging.getLogger(__name__)
 

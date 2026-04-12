@@ -4,7 +4,7 @@ __version__ = "0.1.0"
 
 
 def main() -> None:
-    """CLI entry point: yesautomate-runtime start --config <path>"""
+    """CLI entry point: plsautomate-runtime start --config <path>"""
     import argparse
     import logging
     import os
@@ -16,11 +16,11 @@ def main() -> None:
         datefmt="%Y-%m-%d %H:%M:%S",
     )
 
-    from yesautomate_runtime.config import load_config
-    from yesautomate_runtime.server import create_app
+    from plsautomate_runtime.config import load_config
+    from plsautomate_runtime.server import create_app
 
     parser = argparse.ArgumentParser(
-        prog="yesautomate-runtime",
+        prog="plsautomate-runtime",
         description="PlsAutomate Runtime Server",
     )
     subparsers = parser.add_subparsers(dest="command")

@@ -8,8 +8,8 @@ from datetime import datetime
 from typing import Any
 from uuid import uuid4
 
-from yesautomate_runtime.actions.base import BaseAction
-from yesautomate_runtime.condition import evaluate_condition
+from plsautomate_runtime.actions.base import BaseAction
+from plsautomate_runtime.condition import evaluate_condition
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +147,7 @@ class ActionRunner:
             return
 
         try:
-            from yesautomate_runtime.db import ActionLog
+            from plsautomate_runtime.db import ActionLog
 
             async with session_factory() as session:
                 log = ActionLog(

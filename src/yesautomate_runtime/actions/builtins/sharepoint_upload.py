@@ -7,7 +7,7 @@ from typing import Any
 
 import httpx
 
-from yesautomate_runtime.actions.base import BaseAction
+from plsautomate_runtime.actions.base import BaseAction
 
 
 class SharePointUploadAction(BaseAction):

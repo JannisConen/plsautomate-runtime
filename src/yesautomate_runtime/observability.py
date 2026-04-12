@@ -8,7 +8,7 @@ from typing import Any
 from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from yesautomate_runtime.db import ExecutionRecord
+from plsautomate_runtime.db import ExecutionRecord
 
 
 async def get_execution_stats(

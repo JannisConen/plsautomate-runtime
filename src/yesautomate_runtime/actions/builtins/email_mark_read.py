@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from yesautomate_runtime.actions.base import BaseAction, get_email_connector
+from plsautomate_runtime.actions.base import BaseAction, get_email_connector
 
 
 class EmailMarkReadAction(BaseAction):

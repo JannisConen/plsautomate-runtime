@@ -9,8 +9,8 @@ from pathlib import Path
 import pytest
 import pytest_asyncio
 
-from yesautomate_runtime.config import AppConfig, load_config
-from yesautomate_runtime.db import Base, init_db, close_db
+from plsautomate_runtime.config import AppConfig, load_config
+from plsautomate_runtime.db import Base, init_db, close_db
 
 # Set API keys for tests
 os.environ["ENDPOINT_API_KEYS"] = "test-key-123,another-key"

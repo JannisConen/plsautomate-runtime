@@ -239,7 +239,7 @@ def _analyze_processes(config: Any) -> dict[str, dict[str, Any]]:
         "output_fields": [...],
     }
     """
-    from yesautomate_runtime.pipeline import _load_prompts, _load_output_schema
+    from plsautomate_runtime.pipeline import _load_prompts, _load_output_schema
 
     info: dict[str, dict[str, Any]] = {}
 

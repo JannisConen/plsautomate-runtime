@@ -73,7 +73,7 @@ async def get_email_connector(secrets: dict[str, str], context: dict[str, Any] |
     params = (context or {}).get("initiator", {})
 
     if "EXCHANGE_CLIENT_ID" in secrets:
-        from yesautomate_runtime.connectors.exchange import ExchangeConnector
+        from plsautomate_runtime.connectors.exchange import ExchangeConnector
         c = ExchangeConnector(params=params, secrets=secrets)
         await c.validate()
         return c
@@ -82,7 +82,7 @@ async def get_email_connector(secrets: dict[str, str], context: dict[str, Any] |
     has_app_pw = "GMAIL_APP_PASSWORD" in secrets
     has_sa = "GOOGLE_SERVICE_ACCOUNT_JSON" in secrets or "GMAIL_SERVICE_ACCOUNT_KEY" in secrets
     if has_app_pw or has_sa:
-        from yesautomate_runtime.connectors.gmail import GmailConnector
+        from plsautomate_runtime.connectors.gmail import GmailConnector
         c = GmailConnector(params=params, secrets=secrets)
         await c.validate()
         return c

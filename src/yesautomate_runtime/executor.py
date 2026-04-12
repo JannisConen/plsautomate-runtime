@@ -11,8 +11,8 @@ from typing import Any
 
 import litellm
 
-from yesautomate_runtime.config import ObservabilityConfig
-from yesautomate_runtime.types import ExecutionResult, schema_to_model
+from plsautomate_runtime.config import ObservabilityConfig
+from plsautomate_runtime.types import ExecutionResult, schema_to_model
 
 logger = logging.getLogger(__name__)
 

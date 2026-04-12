@@ -4,16 +4,16 @@ Registry maps action type string to Python class.
 Adding a new action: create a file, add it to ACTION_TYPES below.
 """
 
-from yesautomate_runtime.actions.builtins.email_reply import EmailReplyAction
-from yesautomate_runtime.actions.builtins.email_forward import EmailForwardAction
-from yesautomate_runtime.actions.builtins.email_move import EmailMoveAction
-from yesautomate_runtime.actions.builtins.email_mark_read import EmailMarkReadAction
-from yesautomate_runtime.actions.builtins.email_send import EmailSendAction
-from yesautomate_runtime.actions.builtins.webhook_post import WebhookPostAction
-from yesautomate_runtime.actions.builtins.file_save_output import FileSaveOutputAction
-from yesautomate_runtime.actions.builtins.gdrive_upload import GDriveUploadAction
-from yesautomate_runtime.actions.builtins.sharepoint_upload import SharePointUploadAction
-from yesautomate_runtime.actions.builtins.process_call import ProcessCallAction
+from plsautomate_runtime.actions.builtins.email_reply import EmailReplyAction
+from plsautomate_runtime.actions.builtins.email_forward import EmailForwardAction
+from plsautomate_runtime.actions.builtins.email_move import EmailMoveAction
+from plsautomate_runtime.actions.builtins.email_mark_read import EmailMarkReadAction
+from plsautomate_runtime.actions.builtins.email_send import EmailSendAction
+from plsautomate_runtime.actions.builtins.webhook_post import WebhookPostAction
+from plsautomate_runtime.actions.builtins.file_save_output import FileSaveOutputAction
+from plsautomate_runtime.actions.builtins.gdrive_upload import GDriveUploadAction
+from plsautomate_runtime.actions.builtins.sharepoint_upload import SharePointUploadAction
+from plsautomate_runtime.actions.builtins.process_call import ProcessCallAction
 
 # Type string → action class mapping. Used by ActionRunner/builder to resolve types.
 ACTION_TYPES = {

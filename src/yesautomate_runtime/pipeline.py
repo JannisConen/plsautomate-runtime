@@ -9,8 +9,8 @@ from datetime import datetime
 from typing import Any
 from uuid import uuid4
 
-from yesautomate_runtime.config import AppConfig, ProcessConfig
-from yesautomate_runtime.db import (
+from plsautomate_runtime.config import AppConfig, ProcessConfig
+from plsautomate_runtime.db import (
     create_decision,
     create_execution,
     get_execution,
@@ -18,9 +18,9 @@ from yesautomate_runtime.db import (
     list_executions,
     update_execution,
 )
-from yesautomate_runtime.executor import Executor
-from yesautomate_runtime.storage import StorageBackend
-from yesautomate_runtime.types import (
+from plsautomate_runtime.executor import Executor
+from plsautomate_runtime.storage import StorageBackend
+from plsautomate_runtime.types import (
     After,
     Before,
     Execution,
@@ -58,7 +58,7 @@ def _apply_connector_file_aliases(
     if input_schema_model is None:
         return input_data
 
-    from yesautomate_runtime.types import FileInput
+    from plsautomate_runtime.types import FileInput
 
     for field_name, field_info in input_schema_model.model_fields.items():
         if field_name == "file":
@@ -130,7 +130,7 @@ class Pipeline:
         # so field mappings like input.email work correctly in after.py process.call actions
         input_data = _apply_connector_file_aliases(input_data, modules.get("input_schema"))
 
-        from yesautomate_runtime import __version__
+        from plsautomate_runtime import __version__
 
         session_factory = get_session_factory()
 
@@ -589,7 +589,7 @@ class Pipeline:
 
     async def expire_reviews(self) -> int:
         """Expire timed-out pending reviews. Returns count of expired."""
-        from yesautomate_runtime.config import _parse_duration
+        from plsautomate_runtime.config import _parse_duration
 
         session_factory = get_session_factory()
         expired_count = 0

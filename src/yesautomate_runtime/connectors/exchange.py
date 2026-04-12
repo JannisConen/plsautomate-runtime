@@ -19,8 +19,8 @@ from typing import Any
 
 import httpx
 
-from yesautomate_runtime.connectors.base import Connector, ConnectorItem
-from yesautomate_runtime.storage import LocalStorage
+from plsautomate_runtime.connectors.base import Connector, ConnectorItem
+from plsautomate_runtime.storage import LocalStorage
 
 logger = logging.getLogger(__name__)
 
