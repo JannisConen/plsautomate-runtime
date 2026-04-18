@@ -169,11 +169,13 @@ class Execution(ABC):
         self.config = config or {}
 
     @abstractmethod
-    async def run(self, input_data: dict, context: ExecutionContext) -> dict:
+    async def run(self, input_data: Any, context: ExecutionContext) -> dict:
         """Execute the process logic.
 
         Args:
-            input_data: The prepared input (after before.py, if any).
+            input_data: Always a typed InputSchema instance (Pydantic model defined in
+                input_schema.py). Access fields directly as attributes — no isinstance
+                or hasattr guards needed. e.g. input_data.email.content
             context: Runtime context with access to LLM, instructions,
                      secrets, storage, and other runtime services.
 

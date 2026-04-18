@@ -159,7 +159,15 @@ async def _resolve_single(
     execution_id: str,
     storage: LocalStorage,
 ) -> dict[str, Any]:
-    """Resolve a single FileRef dict into a local file."""
+    """Resolve a single FileRef dict into a local file.
+
+    If the ref already has a ``path`` (set by ``_parse_multipart`` after a direct
+    binary upload), skip all download/decode steps and return it as-is — the file
+    is already stored locally with the correct path.
+    """
+    if ref.get("path"):
+        return ref
+
     filename = ref.get("filename", "unnamed")
     mime_type = ref.get("mimeType", "application/octet-stream")
     extension = ref.get("extension", "")

@@ -699,37 +699,99 @@ async def _parse_multipart(
     execution_id: str,
     storage: StorageBackend,
 ) -> dict[str, Any]:
-    """Parse a multipart/form-data request into an input dict with FileRefs."""
+    """Parse a multipart/form-data request into an input dict.
+
+    Supports two modes:
+
+    **Structured mode** (sent by the PlsAutomate test executor):
+    - ``metadata`` field: JSON input with FileRefs replaced by ``{ "__mref": "fN", ... }``
+      placeholders.  Each placeholder may carry a ``url`` fallback.
+    - ``fN`` fields: binary file parts, one per FileRef.
+    The placeholders are resolved to full FileRef dicts after all parts are collected.
+    Already-uploaded files get a ``path`` field so ``resolve_file_refs`` skips them.
+
+    **Legacy mode** (direct multipart uploads from external callers):
+    No ``metadata`` field — uploaded files are collected in ``input["file"]`` (single)
+    or ``input["files"]`` (multiple), preserving previous behaviour.
+    """
+    from plsautomate_runtime.storage import LocalStorage
+
     form = await request.form()
-    input_data: dict[str, Any] = {}
-    file_refs: list[dict[str, Any]] = []
+    metadata_str: str | None = None
+    uploaded_files: dict[str, dict[str, Any]] = {}   # fieldName → resolved FileRef dict
+    legacy_file_refs: list[dict[str, Any]] = []
+    extra_fields: dict[str, Any] = {}
 
     for field_name, field_value in form.multi_items():
-        # Duck-type check: UploadFile has .read() and .filename.
-        # Cannot use isinstance() — FastAPI and Starlette may load
-        # different UploadFile classes depending on install.
         if hasattr(field_value, "read") and hasattr(field_value, "filename"):
-            file_ref = await process_uploaded_file(
-                field_value, execution_id, storage
-            )
-            file_refs.append(file_ref.model_dump(by_alias=True))
+            # File part — resolve and store
+            file_ref = await process_uploaded_file(field_value, execution_id, storage)
+            ref_dict = file_ref.model_dump(by_alias=True)
+            # Attach local filesystem path so resolve_file_refs can skip re-downloading
+            if isinstance(storage, LocalStorage):
+                ref_dict["path"] = str(storage.base_path / file_ref.key)
+            uploaded_files[field_name] = ref_dict
+            legacy_file_refs.append(ref_dict)
         elif field_name == "metadata":
-            try:
-                metadata = json.loads(field_value) if isinstance(field_value, str) else {}
-                input_data.update(metadata)
-            except (json.JSONDecodeError, TypeError):
-                pass
+            metadata_str = field_value if isinstance(field_value, str) else None
         else:
-            input_data[field_name] = field_value
-
-    if file_refs:
-        if len(file_refs) == 1:
-            input_data["file"] = file_refs[0]
-        else:
-            input_data["files"] = file_refs
+            extra_fields[field_name] = field_value
 
     await form.close()
+
+    if metadata_str is not None:
+        # Structured mode: resolve __mref placeholders with uploaded file dicts
+        try:
+            input_data = json.loads(metadata_str)
+        except (json.JSONDecodeError, TypeError):
+            input_data = {}
+
+        input_data = _resolve_mref_placeholders(input_data, uploaded_files)
+        input_data.update(extra_fields)
+        return input_data
+
+    # Legacy mode: expose files via "file" / "files" keys
+    input_data = dict(extra_fields)
+    if legacy_file_refs:
+        if len(legacy_file_refs) == 1:
+            input_data["file"] = legacy_file_refs[0]
+        else:
+            input_data["files"] = legacy_file_refs
     return input_data
+
+
+def _resolve_mref_placeholders(
+    obj: Any,
+    uploaded_files: dict[str, dict[str, Any]],
+) -> Any:
+    """Recursively replace ``{ "__mref": "fN", ... }`` placeholders with resolved FileRef dicts.
+
+    If the file part was uploaded, the full resolved dict (with ``path``) is used.
+    If the part is missing but the placeholder carries a ``url``, a minimal FileRef with
+    ``url`` is returned so ``resolve_file_refs`` can fall back to a download.
+    """
+    if isinstance(obj, list):
+        return [_resolve_mref_placeholders(item, uploaded_files) for item in obj]
+    if isinstance(obj, dict):
+        mref = obj.get("__mref")
+        if isinstance(mref, str):
+            if mref in uploaded_files:
+                return uploaded_files[mref]
+            # File part missing — build a minimal ref from placeholder metadata so
+            # resolve_file_refs can still attempt a URL download
+            fallback: dict[str, Any] = {
+                "type": "url",
+                "key": mref,
+                "filename": obj.get("filename", "unnamed"),
+                "mimeType": obj.get("mimeType", "application/octet-stream"),
+                "extension": obj.get("extension", ""),
+                "size": obj.get("size", 0),
+            }
+            if obj.get("url"):
+                fallback["url"] = obj["url"]
+            return fallback
+        return {k: _resolve_mref_placeholders(v, uploaded_files) for k, v in obj.items()}
+    return obj
 
 
 def _init_connectors(
