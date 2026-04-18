@@ -5,7 +5,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any, Generic, Literal, TypeVar
 
-from pydantic import BaseModel, ConfigDict, Field, create_model
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, create_model
 
 
 class FileRef(BaseModel):
@@ -24,38 +24,43 @@ class FileRef(BaseModel):
 class FileInput(BaseModel):
     """File input from the PlsAutomate test runner or trigger.
 
-    Contains file metadata and optionally base64-encoded content.
-    Use ``file_content()`` to decode text or ``file_bytes()`` for raw bytes.
+    Use ``get_info()`` to access file content as a semantic ``FileInfo``
+    object with a universal ``.text`` property and type-specific fields.
+
+    Example::
+
+        info = input_data.email.get_info()
+        info.text        # always works — extracted text for any file type
+        info.type        # "email", "pdf", "text", "spreadsheet", etc.
+        info.subject     # email-specific (None for other types)
+        info.pages       # PDF-specific (None for other types)
     """
 
     model_config = ConfigDict(populate_by_name=True)
 
-    type: str | None = None  # "local", "s3", or "url" — absent after runtime resolution
-    key: str | None = None  # storage path — absent after runtime resolution
+    type: str | None = None  # "local", "s3", or "url" — transport field
+    key: str | None = None  # storage path — transport field
     filename: str  # original filename
     size: int | None = None
     mime_type: str | None = Field(default=None, alias="mimeType")
     extension: str | None = None
-    data: str | None = None  # base64-encoded file content (sent by PlsAutomate test runner)
+    data: str | None = None  # base64-encoded file content (from test runner)
     url: str | None = None  # absolute download URL
-    path: str | None = None  # local filesystem path (set by runtime after file resolution)
-    content: str | None = None  # pre-decoded text content (populated by runtime for text files)
+    path: str | None = None  # local filesystem path (set by runtime after resolution)
 
-    def file_content(self, encoding: str = "utf-8") -> str:
-        """Decode base64 data to string."""
-        if not self.data:
-            raise ValueError(f"No data in FileInput for {self.filename}")
-        import base64
+    _cached_info: Any = PrivateAttr(default=None)
 
-        return base64.b64decode(self.data).decode(encoding)
+    def get_info(self) -> "FileInfo":
+        """Parse this file and return a semantic ``FileInfo``.
 
-    def file_bytes(self) -> bytes:
-        """Decode base64 data to bytes."""
-        if not self.data:
-            raise ValueError(f"No data in FileInput for {self.filename}")
-        import base64
-
-        return base64.b64decode(self.data)
+        Lazy: parses on first call, caches the result.
+        Works regardless of how the file arrived (path, base64 data, etc.).
+        """
+        if self._cached_info is not None:
+            return self._cached_info
+        from plsautomate_runtime.file_info import FileInfo, parse_file_info
+        self._cached_info = parse_file_info(self)
+        return self._cached_info
 
 
 class ExecutionResult(BaseModel):
@@ -175,7 +180,7 @@ class Execution(ABC):
         Args:
             input_data: Always a typed InputSchema instance (Pydantic model defined in
                 input_schema.py). Access fields directly as attributes — no isinstance
-                or hasattr guards needed. e.g. input_data.email.content
+                or hasattr guards needed. e.g. input_data.email.get_info().text
             context: Runtime context with access to LLM, instructions,
                      secrets, storage, and other runtime services.
 

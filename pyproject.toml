@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "plsautomate-runtime"
-version = "0.0.2"
+version = "0.0.3"
 description = "Runtime engine for PlsAutomate generated applications"
 readme = "README.md"
 requires-python = ">=3.10"

@@ -14,77 +14,6 @@ from plsautomate_runtime.types import FileRef
 
 logger = logging.getLogger(__name__)
 
-# Extensions whose content is automatically read as text during FileRef resolution.
-# For these files, the resolved dict will include a "content" field with the text.
-# Binary files (PDF, images, etc.) only get a "path" — read them in execution.py.
-TEXT_EXTENSIONS: set[str] = {
-    # Plain text
-    "txt", "text", "log", "ini", "cfg", "conf",
-    # Email
-    "eml",
-    # Data / markup
-    "csv", "tsv", "json", "jsonl", "xml", "yaml", "yml", "toml",
-    # Web / docs
-    "html", "htm", "xhtml", "md", "markdown", "rst", "tex",
-    # Code (common)
-    "py", "js", "ts", "java", "c", "cpp", "h", "cs", "rb", "go", "rs", "sh", "bat", "ps1", "sql",
-}
-
-
-def _decode_eml(content: bytes) -> str:
-    """Parse an .eml file and return a human-readable text representation.
-
-    Decodes MIME parts (base64, quoted-printable, etc.) so execution code
-    receives plain text rather than the raw MIME envelope.
-    """
-    import email as _email
-
-    msg = _email.message_from_bytes(content)
-    subject = msg.get("Subject", "")
-    sender = msg.get("From", "")
-    recipient = msg.get("To", "")
-    date = msg.get("Date", "")
-
-    body = ""
-    if msg.is_multipart():
-        for part in msg.walk():
-            if part.get_content_type() == "text/plain":
-                payload = part.get_payload(decode=True)
-                if payload:
-                    body = payload.decode(part.get_content_charset() or "utf-8", errors="replace")
-                    break
-    else:
-        payload = msg.get_payload(decode=True)
-        if payload:
-            body = payload.decode(msg.get_content_charset() or "utf-8", errors="replace")
-        else:
-            body = msg.get_payload() or ""
-
-    lines = []
-    if sender:
-        lines.append(f"From: {sender}")
-    if recipient:
-        lines.append(f"To: {recipient}")
-    if date:
-        lines.append(f"Date: {date}")
-    if subject:
-        lines.append(f"Subject: {subject}")
-    lines.append("")
-    lines.append(body)
-    return "\n".join(lines)
-
-
-def _is_text_file(filename: str, mime_type: str) -> bool:
-    """Determine if a file should be auto-read as text."""
-    ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
-    if ext in TEXT_EXTENSIONS:
-        return True
-    # Also check MIME type for anything text/*
-    if mime_type.startswith("text/") or mime_type in ("application/json", "application/xml", "message/rfc822"):
-        return True
-    return False
-
-
 async def process_uploaded_file(
     file: UploadFile,
     execution_id: str,
@@ -134,11 +63,9 @@ async def resolve_file_refs(
     - Elif it has ``url``: download and store locally
     - Otherwise: leave as-is (already a local ref)
 
-    The FileRef is replaced with a simplified dict containing ``filename``,
+    The FileRef is replaced with a dict containing ``filename``,
     ``path`` (local storage path), ``mimeType``, ``extension``, and ``size``.
-    For text files (.eml, .txt, .csv, .json, .xml, etc.), a ``content`` field
-    is added with the decoded text so execution.py can use it directly.
-    Binary files only get ``path`` — use a library to read them.
+    Use ``FileInput.get_info()`` in execution code to access parsed content.
     """
     if isinstance(obj, list):
         return [await resolve_file_refs(item, execution_id, storage) for item in obj]
@@ -213,7 +140,7 @@ async def _resolve_single(
     await storage.put(local_key, content, mime_type)
     local_path = str(storage.base_path / local_key)
 
-    result: dict[str, Any] = {
+    return {
         # Keep type/key so downstream processes can re-resolve this as a FileRef
         "type": "local",
         "key": local_key,
@@ -223,16 +150,3 @@ async def _resolve_single(
         "extension": extension,
         "size": len(content),
     }
-
-    # Auto-read text content so execution.py doesn't have to
-    if _is_text_file(filename, mime_type):
-        try:
-            ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
-            if ext == "eml" or mime_type == "message/rfc822":
-                result["content"] = _decode_eml(content)
-            else:
-                result["content"] = content.decode("utf-8", errors="replace")
-        except Exception:
-            logger.debug("Could not decode %s as text, skipping content field", filename)
-
-    return result

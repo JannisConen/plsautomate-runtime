@@ -149,24 +149,27 @@ class TestResolveSingle:
         assert result.get("_unresolved") is True
 
     @pytest.mark.asyncio
-    async def test_adds_text_content_for_text_files(self, tmp_storage: LocalStorage) -> None:
+    async def test_text_files_resolved_without_content_field(self, tmp_storage: LocalStorage) -> None:
+        """Content is no longer set by resolve — use FileInput.get_info() instead."""
         content = b"Hello, world!"
         encoded = base64.b64encode(content).decode()
         ref = make_file_ref(filename="note.txt", extension="txt", mimeType="text/plain", data=encoded)
 
         result = await _resolve_single(ref, "exec-001", tmp_storage)
 
-        assert result.get("content") == "Hello, world!"
+        assert "content" not in result
+        assert result.get("path") is not None
 
     @pytest.mark.asyncio
-    async def test_no_text_content_for_binary_files(self, tmp_storage: LocalStorage) -> None:
+    async def test_binary_files_resolved_with_path(self, tmp_storage: LocalStorage) -> None:
         content = b"%PDF binary"
         encoded = base64.b64encode(content).decode()
-        ref = make_file_ref(data=encoded)  # PDF, not text
+        ref = make_file_ref(data=encoded)  # PDF
 
         result = await _resolve_single(ref, "exec-001", tmp_storage)
 
         assert "content" not in result
+        assert result.get("path") is not None
 
     @pytest.mark.asyncio
     async def test_result_has_type_and_key(self, tmp_storage: LocalStorage) -> None:
